@@ -1,17 +1,17 @@
 /**
  * BOT DE REENVÍO AUTOMÁTICO DE WHATSAPP
- * Compatible con Render y Puppeteer Headless Chrome
- * Autor: CARMONVE + GPT5 Asistente
- */
+ * 100% compatible con Render.com (sin GUI)
+ * Usa Chrome headless descargado por Puppeteer
+ *Carlos Monsalve Vejar-kiniborgs/
 
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 const qrcode = require("qrcode-terminal");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const puppeteer = require("puppeteer");
 
 // === LIMPIEZA AUTOMÁTICA DE CACHÉ ===
-const os = require("os");
 const puppeteerCache = path.join(os.homedir(), ".cache", "puppeteer");
 try {
   if (fs.existsSync(puppeteerCache)) {
@@ -19,13 +19,32 @@ try {
     fs.rmSync(puppeteerCache, { recursive: true, force: true });
   }
 } catch (err) {
-  console.warn("⚠️ No se pudo limpiar el caché:", err.message);
+  console.warn(⚠️ No se pudo limpiar el caché:", err.message);
 }
 
-// === CONFIGURACIÓN DE CHROME PARA RENDER ===
-const CHROME_PATH =
-  "/opt/render/.cache/puppeteer/chrome/linux-141.0.7390.122/chrome-linux64/chrome";
-console.log("🚀 Using Chrome path:", CHROME_PATH);
+// === DETECCIÓN AUTOMÁTICA DEL NAVEGADOR ===
+async function getChromePath() {
+  // En Render (Linux)
+  const renderPath = "/opt/render/.cache/puppeteer/chrome";
+  try {
+    const versions = fs.readdirSync(renderPath);
+    if (versions.length > 0) {
+      const chromePath = path.join(
+        renderPath,
+        versions[0],
+        "chrome-linux64",
+        "chrome"
+      );
+      console.log("✅ Chrome detectado:", chromePath);
+      return chromePath;
+    }
+  } catch (e) {}
+
+  // En tu PC local (Windows/Mac/Linux)
+  const local = await puppeteer.executablePath();
+  console.log("✅ Chrome local detectado:", local);
+  return local;
+}
 
 // === CARGA DE CONFIGURACIÓN ===
 const CONFIG_PATH = path.join(__dirname, "config.json");
@@ -43,7 +62,7 @@ if (!fs.existsSync(RULES_PATH)) {
 const config = JSON.parse(fs.readFileSync(CONFIG_PATH));
 const rules = JSON.parse(fs.readFileSync(RULES_PATH));
 
-// === PREPARA EXPRESIONES REGULARES DE REGLAS ===
+// === PREPARA EXPRESIONES REGULARES ===
 const RULES = rules.map((r) => ({
   origin: r.Grupo_Origen,
   target: r.Grupo_Destino,
@@ -54,62 +73,62 @@ const RULES = rules.map((r) => ({
   ],
 }));
 
-// === INICIALIZA EL CLIENTE DE WHATSAPP ===
-const client = new Client({
-  authStrategy: new LocalAuth(),
-  puppeteer: {
-    executablePath: CHROME_PATH,
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  },
-});
+// === FUNCIÓN PRINCIPAL ===
+(async () => {
+  const CHROME_PATH = await getChromePath();
 
-// === EVENTOS DEL CLIENTE ===
-client.on("qr", (qr) => {
-  console.log("📱 Escanea este código QR para iniciar sesión:");
-  qrcode.generate(qr, { small: true });
-});
+  const client = new Client({
+    authStrategy: new LocalAuth(),
+    puppeteer: {
+      executablePath: CHROME_PATH,
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    },
+  });
 
-client.on("ready", () => {
-  console.log("✅ Cliente listo y conectado.");
-});
+  client.on("qr", (qr) => {
+    console.log("📱 Escanea este código QR para iniciar sesión:");
+    qrcode.generate(qr, { small: true });
+  });
 
-client.on("message", async (msg) => {
-  try {
-    const chat = await msg.getChat();
+  client.on("ready", () => {
+    console.log("✅ Cliente listo y conectado.");
+  });
 
-    // Verifica si el mensaje proviene de un grupo relevante
-    const ruleSet = RULES.filter(
-      (r) => r.origin.toLowerCase() === chat.name.toLowerCase()
-    );
+  client.on("message", async (msg) => {
+    try {
+      const chat = await msg.getChat();
+      const ruleSet = RULES.filter(
+        (r) => r.origin.toLowerCase() === chat.name.toLowerCase()
+      );
+      if (ruleSet.length === 0) return;
 
-    if (ruleSet.length === 0) return;
+      for (const rule of ruleSet) {
+        const text = msg.body.replace(/\*/g, "");
+        const allMatch = rule.regexes.every((rx) => rx.test(text));
 
-    for (const rule of ruleSet) {
-      const text = msg.body.replace(/\*/g, ""); // Limpia negritas
-      const allMatch = rule.regexes.every((rx) => rx.test(text));
+        if (allMatch) {
+          console.log(
+            `📤 Reenviando mensaje del grupo "${chat.name}" a "${rule.target}"`
+          );
 
-      if (allMatch) {
-        console.log(
-          `📤 Reenviando mensaje del grupo "${chat.name}" a "${rule.target}"`
-        );
+          const chats = await client.getChats();
+          const targetChat = chats.find(
+            (c) => c.name.toLowerCase() === rule.target.toLowerCase()
+          );
 
-        const chats = await client.getChats();
-        const targetChat = chats.find(
-          (c) => c.name.toLowerCase() === rule.target.toLowerCase()
-        );
-
-        if (targetChat) {
-          await targetChat.sendMessage(msg.body);
-          console.log("✅ Mensaje reenviado con éxito.");
-        } else {
-          console.log(`⚠️ No se encontró el grupo destino: ${rule.target}`);
+          if (targetChat) {
+            await targetChat.sendMessage(msg.body);
+            console.log("✅ Mensaje reenviado con éxito.");
+          } else {
+            console.log(`⚠️ No se encontró el grupo destino: ${rule.target}`);
+          }
         }
       }
+    } catch (err) {
+      console.error("❌ Error procesando mensaje:", err.message);
     }
-  } catch (err) {
-    console.error("❌ Error procesando mensaje:", err.message);
-  }
-});
+  });
 
-client.initialize();
+  client.initialize();
+})();
