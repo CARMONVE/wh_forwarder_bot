@@ -1,6 +1,6 @@
 /**
  * BOT DE REENVÍO AUTOMÁTICO DE WHATSAPP
- * Totalmente compatible con Render (headless, sin GUI)
+ * Compatible con Render (modo headless)
  */
 
 const fs = require("fs");
@@ -21,62 +21,29 @@ try {
   console.warn("⚠️ No se pudo limpiar el caché:", err.message);
 }
 
-// === DETECCIÓN AUTOMÁTICA DEL CHROME ===
-async function getChromePath() {
-  const renderPath = "/opt/render/.cache/puppeteer/chrome";
-  try {
-    const versions = fs.readdirSync(renderPath);
-    if (versions.length > 0) {
-      const chromePath = path.join(
-        renderPath,
-        versions[0],
-        "chrome-linux64",
-        "chrome"
-      );
-      console.log("✅ Chrome detectado:", chromePath);
-      return chromePath;
-    }
-  } catch (e) {}
-
-  // En local
-  const local = puppeteer.executablePath();
-  console.log("✅ Chrome local detectado:", local);
-  return local;
-}
-
-// === CARGA DE CONFIGURACIÓN ===
+// === CARGA CONFIGURACIÓN ===
 const CONFIG_PATH = path.join(__dirname, "config.json");
-const RULES_PATH = path.join(__dirname, "processed.json");
-
 if (!fs.existsSync(CONFIG_PATH)) {
   console.error("❌ No se encontró config.json");
   process.exit(1);
 }
-if (!fs.existsSync(RULES_PATH)) {
-  console.error("❌ No se encontró processed.json");
-  process.exit(1);
-}
-
 const config = JSON.parse(fs.readFileSync(CONFIG_PATH));
-const rules = JSON.parse(fs.readFileSync(RULES_PATH));
 
-// === PREPARAR REGLAS ===
-const RULES = rules.map((r) => {
+// === OBTENER CHROME ===
+async function getChromePath() {
   try {
-    return {
-      origin: r.Grupo_Origen,
-      target: r.Grupo_Destino,
-      regexes: [
-        new RegExp((r.Restriccion_1 || "").replace(/\*/g, ".*"), "i"),
-        new RegExp((r.Restriccion_2 || "").replace(/\*/g, ".*"), "i"),
-        new RegExp((r.Restriccion_3 || "").replace(/\*/g, ".*"), "i"),
-      ],
-    };
+    const browserFetcher = puppeteer.createBrowserFetcher();
+    const localRevisions = await browserFetcher.localRevisions();
+    if (localRevisions.length > 0) {
+      const revisionInfo = await browserFetcher.revisionInfo(localRevisions[0]);
+      console.log("✅ Chrome detectado:", revisionInfo.executablePath);
+      return revisionInfo.executablePath;
+    }
   } catch (err) {
-    console.warn("⚠️ Error creando regla:", r, err.message);
-    return null;
+    console.warn("⚠️ No se pudo obtener Chrome de caché:", err.message);
   }
-}).filter(Boolean);
+  return puppeteer.executablePath();
+}
 
 // === FUNCIÓN PRINCIPAL ===
 (async () => {
@@ -103,27 +70,25 @@ const RULES = rules.map((r) => {
   client.on("message", async (msg) => {
     try {
       const chat = await msg.getChat();
-      const ruleSet = RULES.filter(
+      const text = msg.body;
+
+      const applicableRules = config.rules.filter(
         (r) => r.origin.toLowerCase() === chat.name.toLowerCase()
       );
-      if (ruleSet.length === 0) return;
 
-      for (const rule of ruleSet) {
-        const text = msg.body.replace(/\*/g, ""); // elimina negritas
-        const allMatch = rule.regexes.every((rx) => rx.test(text));
-
-        if (allMatch) {
-          console.log(`📤 Reenviando mensaje de "${chat.name}" a "${rule.target}"`);
+      for (const rule of applicableRules) {
+        const regex = new RegExp(rule.pattern, rule.flags || "i");
+        if (regex.test(text)) {
+          console.log(`📤 Coincidencia: reenviando a ${rule.target}`);
           const chats = await client.getChats();
           const targetChat = chats.find(
             (c) => c.name.toLowerCase() === rule.target.toLowerCase()
           );
-
           if (targetChat) {
             await targetChat.sendMessage(msg.body);
             console.log("✅ Mensaje reenviado con éxito.");
           } else {
-            console.log(`⚠️ No se encontró el grupo destino: ${rule.target}`);
+            console.log(`⚠️ Grupo destino no encontrado: ${rule.target}`);
           }
         }
       }
