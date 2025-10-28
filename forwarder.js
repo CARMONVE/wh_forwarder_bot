@@ -4,58 +4,56 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const puppeteer = require('puppeteer');
 const XLSX = require('xlsx');
 
-// === Función para asegurar que Puppeteer tenga Chrome instalado ===
-async function ensureChromeAvailable() {
-  try {
-    const browserFetcher = puppeteer.createBrowserFetcher();
-    const localRevisions = await browserFetcher.localRevisions();
-
-    if (localRevisions.length === 0) {
-      console.log('⚠️ Chrome no encontrado. Descargando una versión...');
-      await browserFetcher.download(puppeteer._preferredRevision);
-      console.log('✅ Chrome descargado correctamente.');
-    } else {
-      console.log('✅ Chrome ya está disponible.');
-    }
-  } catch (err) {
-    console.error('❌ Error verificando o descargando Chrome:', err);
-  }
-}
-
 (async () => {
-  await ensureChromeAvailable();
-
-  const config = JSON.parse(fs.readFileSync('./config.json', 'utf-8'));
+  const configPath = './config.json';
   const processedPath = './processed.json';
+  
+  // Crear archivo processed.json si no existe
   if (!fs.existsSync(processedPath)) fs.writeFileSync(processedPath, '[]', 'utf-8');
+
+  // Cargar reglas de configuración
+  const config = fs.existsSync(configPath)
+    ? JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+    : { rules: [] };
+
+  console.log('🚀 Iniciando WhatsApp bot con Puppeteer estándar...');
+
+  let chromePath;
+  try {
+    chromePath = await puppeteer.executablePath();
+  } catch {
+    console.warn('⚠️ No se pudo obtener el path de Chrome, usando Puppeteer integrado.');
+    chromePath = undefined;
+  }
 
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
       headless: true,
+      executablePath: chromePath,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-gpu',
         '--no-zygote',
         '--disable-dev-shm-usage'
-      ],
-    },
+      ]
+    }
   });
 
   client.on('qr', (qr) => {
-    console.log('📱 Escanea este código QR para conectar tu bot:');
+    console.log('📱 Escanea este código QR para conectar:');
     qrcode.generate(qr, { small: true });
   });
 
   client.on('ready', () => {
-    console.log('✅ Bot conectado y listo.');
+    console.log('✅ Bot conectado y operativo.');
   });
 
   client.on('message', async (msg) => {
     try {
-      const data = JSON.parse(fs.readFileSync(processedPath, 'utf-8'));
-      if (data.includes(msg.id._serialized)) return;
+      const processed = JSON.parse(fs.readFileSync(processedPath, 'utf-8'));
+      if (processed.includes(msg.id._serialized)) return;
 
       const rule = config.rules.find(r => {
         if (r.origin !== msg.from) return false;
@@ -65,11 +63,11 @@ async function ensureChromeAvailable() {
 
       if (rule) {
         await client.sendMessage(rule.target, msg.body);
-        console.log(`📤 Mensaje reenviado de ${rule.origin} a ${rule.target}`);
+        console.log(`📤 Reenviado de ${rule.origin} a ${rule.target}`);
       }
 
-      data.push(msg.id._serialized);
-      fs.writeFileSync(processedPath, JSON.stringify(data, null, 2));
+      processed.push(msg.id._serialized);
+      fs.writeFileSync(processedPath, JSON.stringify(processed, null, 2));
     } catch (err) {
       console.error('❌ Error procesando mensaje:', err);
     }

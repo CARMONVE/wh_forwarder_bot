@@ -1,8 +1,9 @@
 {
   "name": "wh_forwarder_bot",
-  "version": "1.3.0",
+  "version": "1.3.2",
   "main": "forwarder.js",
   "scripts": {
+    "prebuild": "rm -rf /opt/render/.cache/puppeteer || true && rm -rf node_modules/.cache || true",
     "build": "npm install",
     "start": "node forwarder.js"
   },
