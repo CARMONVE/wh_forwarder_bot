@@ -1,9 +1,10 @@
 {
   "name": "wh_forwarder_bot",
-  "version": "1.0.2",
+  "version": "1.0.3",
+  "description": "Bot para reenviar mensajes de WhatsApp entre grupos según reglas del archivo Excel/JSON.",
   "main": "forwarder.js",
   "scripts": {
-    "build": "npx puppeteer browsers install chrome",
+    "build": "npx puppeteer browsers install chrome && npm install",
     "start": "node forwarder.js"
   },
   "dependencies": {
@@ -11,5 +12,10 @@
     "puppeteer": "^22.11.0",
     "xlsx": "^0.18.5",
     "qrcode-terminal": "^0.12.0"
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "CARMONVE + GPT-5 Assistant",
+  "license": "MIT"
 }

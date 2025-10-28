@@ -1,8 +1,7 @@
 /**
  * BOT DE REENVÍO AUTOMÁTICO DE WHATSAPP
- * 100% compatible con Render.com (sin GUI)
- * Usa Chrome headless descargado por Puppeteer
- *Carlos Monsalve Vejar-kiniborgs/
+ * Totalmente compatible con Render (headless, sin GUI)
+ */
 
 const fs = require("fs");
 const path = require("path");
@@ -19,12 +18,11 @@ try {
     fs.rmSync(puppeteerCache, { recursive: true, force: true });
   }
 } catch (err) {
-  console.warn(⚠️ No se pudo limpiar el caché:", err.message);
+  console.warn("⚠️ No se pudo limpiar el caché:", err.message);
 }
 
-// === DETECCIÓN AUTOMÁTICA DEL NAVEGADOR ===
+// === DETECCIÓN AUTOMÁTICA DEL CHROME ===
 async function getChromePath() {
-  // En Render (Linux)
   const renderPath = "/opt/render/.cache/puppeteer/chrome";
   try {
     const versions = fs.readdirSync(renderPath);
@@ -40,8 +38,8 @@ async function getChromePath() {
     }
   } catch (e) {}
 
-  // En tu PC local (Windows/Mac/Linux)
-  const local = await puppeteer.executablePath();
+  // En local
+  const local = puppeteer.executablePath();
   console.log("✅ Chrome local detectado:", local);
   return local;
 }
@@ -62,16 +60,23 @@ if (!fs.existsSync(RULES_PATH)) {
 const config = JSON.parse(fs.readFileSync(CONFIG_PATH));
 const rules = JSON.parse(fs.readFileSync(RULES_PATH));
 
-// === PREPARA EXPRESIONES REGULARES ===
-const RULES = rules.map((r) => ({
-  origin: r.Grupo_Origen,
-  target: r.Grupo_Destino,
-  regexes: [
-    new RegExp(r.Restriccion_1.replace(/\*/g, ".*"), "i"),
-    new RegExp(r.Restriccion_2.replace(/\*/g, ".*"), "i"),
-    new RegExp(r.Restriccion_3.replace(/\*/g, ".*"), "i"),
-  ],
-}));
+// === PREPARAR REGLAS ===
+const RULES = rules.map((r) => {
+  try {
+    return {
+      origin: r.Grupo_Origen,
+      target: r.Grupo_Destino,
+      regexes: [
+        new RegExp((r.Restriccion_1 || "").replace(/\*/g, ".*"), "i"),
+        new RegExp((r.Restriccion_2 || "").replace(/\*/g, ".*"), "i"),
+        new RegExp((r.Restriccion_3 || "").replace(/\*/g, ".*"), "i"),
+      ],
+    };
+  } catch (err) {
+    console.warn("⚠️ Error creando regla:", r, err.message);
+    return null;
+  }
+}).filter(Boolean);
 
 // === FUNCIÓN PRINCIPAL ===
 (async () => {
@@ -104,14 +109,11 @@ const RULES = rules.map((r) => ({
       if (ruleSet.length === 0) return;
 
       for (const rule of ruleSet) {
-        const text = msg.body.replace(/\*/g, "");
+        const text = msg.body.replace(/\*/g, ""); // elimina negritas
         const allMatch = rule.regexes.every((rx) => rx.test(text));
 
         if (allMatch) {
-          console.log(
-            `📤 Reenviando mensaje del grupo "${chat.name}" a "${rule.target}"`
-          );
-
+          console.log(`📤 Reenviando mensaje de "${chat.name}" a "${rule.target}"`);
           const chats = await client.getChats();
           const targetChat = chats.find(
             (c) => c.name.toLowerCase() === rule.target.toLowerCase()
@@ -130,5 +132,5 @@ const RULES = rules.map((r) => ({
     }
   });
 
-  client.initialize();
+  await client.initialize();
 })();
