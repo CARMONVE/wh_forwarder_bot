@@ -1,41 +1,148 @@
 {
-  "sourceChats": [
-    "OBRA CIVIL R3 R4 R5 ARA",
-    "TKS EQUIPOS R3,R4 ARA"
-  ],
   "rules": [
     {
-      "pattern": "(?mi)^(?=.*T\\&S\\ GLOBAL)(?s)(?=.*Prioridad:\\ ALTA)(?=.*Coordinador:COORDINADOR\\ ZONA\\ 4\\.4).*",
-      "flags": "mi",
+      "origin": "TKS EQUIPOS R3,R4 ARA",
       "target": "T&S GLOBAL R11",
-      "includeMatchInForward": false,
-      "origin": "TKS EQUIPOS R3,R4 ARA"
+      "pattern": "^(?=.*T&S GLOBAL)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
     },
     {
-      "pattern": "(?mi)^(?=.*DIACTEC)(?s)(?=.*Prioridad:\\ ALTA)(?=.*Coordinador:COORDINADOR\\ ZONA\\ 4\\.4).*",
-      "flags": "mi",
+      "origin": "TKS EQUIPOS R3,R4 ARA",
       "target": "Diactec R11",
-      "includeMatchInForward": false,
-      "origin": "TKS EQUIPOS R3,R4 ARA"
+      "pattern": "^(?=.*DIACTEC)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
     },
     {
-      "pattern": "(?mi)^(?=.*WESTON)(?s)(?=.*Prioridad:\\ ALTA)(?=.*Coordinador:COORDINADOR\\ ZONA\\ 4\\.4).*",
-      "flags": "mi",
+      "origin": "TKS EQUIPOS R3,R4 ARA",
       "target": "WESTON R11",
-      "includeMatchInForward": false,
-      "origin": "TKS EQUIPOS R3,R4 ARA"
+      "pattern": "^(?=.*WESTON)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
     },
     {
-      "pattern": "(?mi)^(?=.*SABAOTH)(?s)(?=.*Prioridad:\\ ALTA)(?=.*Coordinador:COORDINADOR\\ ZONA\\ 4\\.4).*",
-      "flags": "mi",
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "T&S GLOBAL R11",
+      "pattern": "^(?=.*T&S GLOBAL)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.5).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "R11 Movimiento plantas",
+      "pattern": "^(?=.*KAIROS)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "R11 Movimiento plantas",
+      "pattern": "^(?=.*KAIROS)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.5).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "Diactec R11",
+      "pattern": "^(?=.*DIACTEC)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.5).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "REYJOL - R11",
+      "pattern": "^(?=.*REYJOL)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.5).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "WESTON R11",
+      "pattern": "^(?=.*WESTON)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.5).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "OBRA CIVIL R3 R4 R5 ARA",
       "target": "SABAOTH R11 obra civil SANTANDER",
-      "includeMatchInForward": false,
-      "origin": "OBRA CIVIL R3 R4 R5 ARA"
+      "pattern": "^(?=.*SABAOTH)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "OBRA CIVIL R3 R4 R5 ARA",
+      "target": "KAIROS- OBRA CIVIL",
+      "pattern": "^(?=.*KAIROS)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "OBRA CIVIL R3 R4 R5 ARA",
+      "target": "GENIEZ SAS R11",
+      "pattern": "^(?=.*GENIEZ)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "OBRA CIVIL R3 R4 R5 ARA",
+      "target": "3E  SMART SOLUTIONS R11",
+      "pattern": "^(?=.*3E  SMART)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "KARCHER R11",
+      "pattern": "^(?=.*KARCHER)(?=.*Prioridad: MEDIA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "KARCHER R11",
+      "pattern": "^(?=.*KARCHER)(?=.*Prioridad: MEDIA)(?=.*Coordinador:COORDINADOR ZONA 4\\.5).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "EYC Puertas ARA BUCARAMANGA Y CUCUTA",
+      "pattern": "^(?=.*EYC)(?=.*Prioridad: MEDIA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "EYC Puertas ARA BUCARAMANGA Y CUCUTA",
+      "pattern": "^(?=.*EYC)(?=.*Prioridad: MEDIA)(?=.*Coordinador:COORDINADOR ZONA 4\\.5).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "KRYOTEC R11 C.Procesos",
+      "pattern": "^(?=.*KRYOTEC)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "KRYOTEC R11 C.Procesos",
+      "pattern": "^(?=.*KRYOTEC)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.5).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "BAICO R11 C.Procesos",
+      "pattern": "^(?=.*BAICO)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "OBRA CIVIL R3 R4 R5 ARA",
+      "target": "Trampas de grasa",
+      "pattern": "^(?=.*INGEALIMENTOS)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "OBRA CIVIL R3 R4 R5 ARA",
+      "target": "Trampas de grasa",
+      "pattern": "^(?=.*INGEALIMENTOS)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.5).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "INFLUMAX R11",
+      "pattern": "^(?=.*INFLUMAX)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.4).*",
+      "flags": "ims"
+    },
+    {
+      "origin": "TKS EQUIPOS R3,R4 ARA",
+      "target": "INFLUMAX R11",
+      "pattern": "^(?=.*INFLUMAX)(?=.*Prioridad: ALTA)(?=.*Coordinador:COORDINADOR ZONA 4\\.5).*",
+      "flags": "ims"
     }
-  ],
-  "whatsapp": {
-    "inputDataTab": "10",
-    "waitForSelectorsTimeoutMs": 30000
-  },
-  "debug": true
+  ]
 }
