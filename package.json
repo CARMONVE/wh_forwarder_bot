@@ -1,6 +1,6 @@
 {
   "name": "wh_forwarder_bot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Bot de WhatsApp que reenvía mensajes entre grupos según reglas de LISTA.xlsx",
   "main": "forwarder.js",
   "type": "commonjs",
@@ -14,3 +14,4 @@
     "puppeteer": "^22.10.0"
   }
 }
+
