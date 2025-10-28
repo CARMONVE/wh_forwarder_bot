@@ -1,5 +1,4 @@
 {
-  "$schema": "./config.schema.json",
   "rules": [
     {
       "origin": "TKS EQUIPOS R3,R4 ARA",
