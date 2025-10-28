@@ -1,77 +1,84 @@
-const fs = require('fs');
-const qrcode = require('qrcode-terminal');
 const { Client, LocalAuth } = require('whatsapp-web.js');
+const qrcode = require('qrcode-terminal');
+const fs = require('fs');
+const xlsx = require('xlsx');
+const express = require('express');
 const puppeteer = require('puppeteer');
-const XLSX = require('xlsx');
+const config = require('./config.json');
 
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// 🌐 Servidor HTTP para mantener el servicio activo en Render
+app.get('/', (req, res) => {
+  res.send('🚀 WhatsApp Forwarder Bot is running.');
+});
+app.listen(PORT, () => console.log(`🌍 Server listening on port ${PORT}`));
+
+// 📦 Inicializa Puppeteer solo si Render lo necesita
 (async () => {
-  const configPath = './config.json';
-  const processedPath = './processed.json';
-  
-  // Crear archivo processed.json si no existe
-  if (!fs.existsSync(processedPath)) fs.writeFileSync(processedPath, '[]', 'utf-8');
-
-  // Cargar reglas de configuración
-  const config = fs.existsSync(configPath)
-    ? JSON.parse(fs.readFileSync(configPath, 'utf-8'))
-    : { rules: [] };
-
-  console.log('🚀 Iniciando WhatsApp bot con Puppeteer estándar...');
-
-  let chromePath;
   try {
-    chromePath = await puppeteer.executablePath();
-  } catch {
-    console.warn('⚠️ No se pudo obtener el path de Chrome, usando Puppeteer integrado.');
-    chromePath = undefined;
+    console.log('✅ Verificando instalación de Chrome...');
+    const browser = await puppeteer.launch({ headless: true });
+    await browser.close();
+  } catch (err) {
+    console.error('⚠️ Puppeteer no pudo iniciar Chrome:', err.message);
   }
-
-  const client = new Client({
-    authStrategy: new LocalAuth(),
-    puppeteer: {
-      headless: true,
-      executablePath: chromePath,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-gpu',
-        '--no-zygote',
-        '--disable-dev-shm-usage'
-      ]
-    }
-  });
-
-  client.on('qr', (qr) => {
-    console.log('📱 Escanea este código QR para conectar:');
-    qrcode.generate(qr, { small: true });
-  });
-
-  client.on('ready', () => {
-    console.log('✅ Bot conectado y operativo.');
-  });
-
-  client.on('message', async (msg) => {
-    try {
-      const processed = JSON.parse(fs.readFileSync(processedPath, 'utf-8'));
-      if (processed.includes(msg.id._serialized)) return;
-
-      const rule = config.rules.find(r => {
-        if (r.origin !== msg.from) return false;
-        const regex = new RegExp(r.pattern, r.flags);
-        return regex.test(msg.body);
-      });
-
-      if (rule) {
-        await client.sendMessage(rule.target, msg.body);
-        console.log(`📤 Reenviado de ${rule.origin} a ${rule.target}`);
-      }
-
-      processed.push(msg.id._serialized);
-      fs.writeFileSync(processedPath, JSON.stringify(processed, null, 2));
-    } catch (err) {
-      console.error('❌ Error procesando mensaje:', err);
-    }
-  });
-
-  await client.initialize();
 })();
+
+// 🔐 Autenticación de WhatsApp con almacenamiento local
+const client = new Client({
+  authStrategy: new LocalAuth(),
+  puppeteer: {
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu'
+    ]
+  }
+});
+
+// 🔍 Muestra el QR de conexión (proporción correcta)
+client.on('qr', qr => {
+  console.log('📱 Escanea este código QR para conectar WhatsApp:');
+  qrcode.generate(qr, { small: false });
+});
+
+// ✅ Listo para enviar y reenviar mensajes
+client.on('ready', () => {
+  console.log('✅ WhatsApp bot conectado y listo.');
+});
+
+// 🔁 Procesamiento de mensajes entrantes
+client.on('message', async msg => {
+  const chat = await msg.getChat();
+  const from = chat.name || chat.id.user;
+
+  for (const rule of config.rules) {
+    if (from.includes(rule.origin)) {
+      const regex = new RegExp(rule.pattern, rule.flags);
+      if (regex.test(msg.body)) {
+        const targetChat = await findChat(rule.target);
+        if (targetChat) {
+          await targetChat.sendMessage(msg.body);
+          console.log(`➡️ Mensaje reenviado de [${from}] a [${rule.target}]`);
+        } else {
+          console.log(`⚠️ No se encontró el chat destino: ${rule.target}`);
+        }
+      }
+    }
+  }
+});
+
+// 🔍 Busca un chat destino por nombre o ID
+async function findChat(targetName) {
+  const chats = await client.getChats();
+  return chats.find(c =>
+    c.name?.toLowerCase().includes(targetName.toLowerCase())
+  );
+}
+
+client.initialize();
+
