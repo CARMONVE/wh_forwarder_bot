@@ -1,0 +1,41 @@
+{
+  "sourceChats": [
+    "OBRA CIVIL R3 R4 R5 ARA",
+    "TKS EQUIPOS R3,R4 ARA"
+  ],
+  "rules": [
+    {
+      "pattern": "(?mi)^(?=.*T\\&S\\ GLOBAL)(?s)(?=.*Prioridad:\\ ALTA)(?=.*Coordinador:COORDINADOR\\ ZONA\\ 4\\.4).*",
+      "flags": "mi",
+      "target": "T&S GLOBAL R11",
+      "includeMatchInForward": false,
+      "origin": "TKS EQUIPOS R3,R4 ARA"
+    },
+    {
+      "pattern": "(?mi)^(?=.*DIACTEC)(?s)(?=.*Prioridad:\\ ALTA)(?=.*Coordinador:COORDINADOR\\ ZONA\\ 4\\.4).*",
+      "flags": "mi",
+      "target": "Diactec R11",
+      "includeMatchInForward": false,
+      "origin": "TKS EQUIPOS R3,R4 ARA"
+    },
+    {
+      "pattern": "(?mi)^(?=.*WESTON)(?s)(?=.*Prioridad:\\ ALTA)(?=.*Coordinador:COORDINADOR\\ ZONA\\ 4\\.4).*",
+      "flags": "mi",
+      "target": "WESTON R11",
+      "includeMatchInForward": false,
+      "origin": "TKS EQUIPOS R3,R4 ARA"
+    },
+    {
+      "pattern": "(?mi)^(?=.*SABAOTH)(?s)(?=.*Prioridad:\\ ALTA)(?=.*Coordinador:COORDINADOR\\ ZONA\\ 4\\.4).*",
+      "flags": "mi",
+      "target": "SABAOTH R11 obra civil SANTANDER",
+      "includeMatchInForward": false,
+      "origin": "OBRA CIVIL R3 R4 R5 ARA"
+    }
+  ],
+  "whatsapp": {
+    "inputDataTab": "10",
+    "waitForSelectorsTimeoutMs": 30000
+  },
+  "debug": true
+}
