@@ -1,10 +1,10 @@
 {
   "name": "wh_forwarder_bot",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "main": "forwarder.js",
   "scripts": {
-    "start": "node forwarder.js",
-    "build": "npx puppeteer browsers install chrome"
+    "build": "npm install && npx puppeteer browsers install chrome",
+    "start": "node forwarder.js"
   },
   "dependencies": {
     "whatsapp-web.js": "^1.21.0",
